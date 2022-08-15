@@ -1,0 +1,1823 @@
+---
+title: "STA 380 Part-2"
+author: "Viswa Tej Seela, Harshit Jain, Krish Engineer, Anudeep Akkana"
+date: "15 August 2022"
+output:
+  pdf_document:
+    fig_caption: yes
+    includes:
+      in_header: header.tex
+    latex_engine: xelatex
+geometry: margin=0.75in
+fontsize: 10pt
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/ieee.csl
+---
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+\begin{center}
+\end{center}
+<!-- Actual text starts here -->
+\clearpage
+\tableofcontents
+\clearpage
+
+
+```{r,warning=FALSE,fig.align='center',include=FALSE,echo=FALSE,warning=FALSE,message=FALSE,error=FALSE} 
+library(ISLR2)
+library(plyr)
+library(gridExtra)
+library(forcats)
+library(RColorBrewer)
+library(ggplot2)
+library(glmnet)
+library(pls)
+library(rpart)
+library(mlbench)
+library(adabag)
+library(e1071)
+library(caret)
+library(ipred)
+library(dplyr)
+library(tree)
+library(keras)
+library(tensorflow)
+library(randomForest)
+library(ggplot2)
+library(ggcorrplot) 
+library(MASS) 
+library(reshape2) 
+library(reshape) 
+library(quantmod)
+library(foreach)
+library(gridExtra)
+library(mosaic)
+library(ggplot2)
+require(MASS)
+require(leaps)
+require(glmnet)
+require(gbm)
+library(tidyverse)
+library(cluster)  
+library(factoextra)
+library(tidyverse)
+library(arules) 
+library(arulesViz)
+library(tm) 
+library(magrittr)
+library(slam)
+library(proxy)
+library('e1071')
+library(purrr)
+library(ggthemes)
+library(RCurl)
+library(fpc)
+library(cluster)
+library(kknn)
+library(xgboost)
+library(quanteda)
+library(ggpubr)
+library(hrbrthemes)
+library(viridis)
+library(ggridges)
+library(quanteda.textstats)
+library(cluster)
+library(HSAUR)
+library(fpc)
+
+knitr::opts_chunk$set(fig.width=15, fig.height=11)
+
+```
+
+
+
+## Probability Practice
+
+### Part A.
+Visitors to your website are asked to answer a single survey question before they get access to the content on the page. Among all of the users, there are two categories: Random Clicker (RC), and Truthful Clicker (TC). There are two possible answers to the survey: yes and no. Random clickers would click either one with equal probability. You are also giving the information that the expected fraction of random clickers is 0.3. After a trial period, you get the following survey results: 65% said Yes and 35% said No. 
+What fraction of people who are truthful clickers answered yes? Hint: use the rule of total probability.
+
+#### Answer:  
+
+Let us list down all the listed porbabilities to get started with the formulation of the problem
+
+* Total probability of an yes $P(Y) = 0.65$
+* Probability of an yes given the click is by a random clicker $P(Y/RC) = 0.5$
+* Probability of a clicker being a random clicker $P(RC) = 0.3$
+* Probability of a clicker being a truthful clicker $P(TC) = 0.7$
+
+Let's consider the total probability equation of yes to get started with:
+Total probability $P(Y)$ =  
+Joint probability of Yes and Random Clickers $P(Y,RC)$ + Joint probability of Yes and True Clickers $P(Y,TC)$                                
+i.e $P(Y) = P(Y,RC) + P(Y,TC)$  
+=>  $P(Y) = P(Y/RC)*P(RC) + P(Y/TC)*P(TC)$  
+=>  $P(Y/TC)*P(TC) = P(Y) - P(Y/RC)*P(RC)$  
+=>  $P(Y/TC) = (P(Y) - P(Y/RC)*P(RC))/P(TC)$  
+Substituting the given values    
+$P(Y/TC) = (0.65 - (0.5*0.3))/0.7
+
+**Another easier way would be to assume the number of participants in the survey to be 100 and assuming ‘p’ proportion of TCs say yes**
+
+
+=> $P(RC)$ = 30
+=> $P(TC)$ = 70
+=> $P(Y/TC)$ = (70 * p)  
+=> $P(N/TC)$ = (70 *(1-p))
+=> $P(T/RC)$ = (30*0.5)
+=> $P(N/RC)$ = (30*0.5)
+
+Which means that out of the random callers, 15 would say ‘Yes’, 15 would
+say ‘No’. We need to evaluate how many of the True Clickers said ‘Yes’.
+
+Basically the total number of people who said yes is - 15 + (70*p)  out of a total of 100 people
+
+(15 + (70 *p)=65
+
+p=5/7
+
+
+**Fraction of people who are truthful clickers answered yes = $5/7$**
+
+### Part B.
+
+Imagine a medical test for a disease with the following two attributes:
+
+* The sensitivity is about 0.993. That is, if someone has the disease, there is a probability of 0.993 that they will test positive.
+
+* The specificity is about 0.9999. This means that if someone doesn't have the disease, there is probability of 0.9999 that they will test negative.
+
+* In the general population, incidence of the disease is reasonably rare: about 0.0025% of all people have it (or 0.000025 as a decimal probability).
+
+Suppose someone tests positive. What is the probability that they have the disease? 
+
+#### Answer:
+
+Let's assume a population of 1 billion to continue with the problem
+
+* Probability of positive test result given the presence of disease $P(P/D) = 0.993$
+* Probability of negative result given there is no disease          $P(N/No Dis) = 0.9999$
+* Total probability of having a disease 
+$P(D) = 0.000025$
+
+The following confusion matrix is used for calculating the TP,TN,FP and FN
+
+Confusion matrix|    
+------------    | ----------- | ------------- |---------------
+Test Result     | Disease     | No Disease
+                | Positive     | 24,825         | 99,997
+                | Negative    | 175           | 999,875,003
+
+* Using the above calculations, we can see that there is a *0.1988* probability of having a disease if the test result is positive
+
+
+\newpage
+
+## Wrangling the Billboard Top 100
+
+### Part A
+Make a table of the top 10 most popular songs since 1958, as measured by the total number of weeks that a song spent on the Billboard Top 100. Note that these data end in week 22 of 2021, so the most popular songs of 2021 will not have up-to-the-minute data; please send our apologies to The Weeknd.
+
+Your table should have 10 rows and 3 columns: performer, song, and count, where count represents the number of weeks that song appeared in the Billboard Top 100. Make sure the entries are sorted in descending order of the count variable, so that the more popular songs appear at the top of the table. Give your table a short caption describing what is shown in the table.
+
+(Note: you'll want to use both performer and song in any group_by operations, to account for the fact that multiple unique songs can share the same title.)
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE} 
+#wrangling the data 
+billboard <- read.csv('billboard.csv')
+  
+top10_popular = billboard %>%
+  group_by(performer, song) %>%
+  summarize(count = max(weeks_on_chart))%>%
+  arrange(desc(count))
+knitr::kable(head(top10_popular, 10),col.names = c("Performers", "Songs", "Total Weeks on Billboard"))
+```
+### Part B
+Is the "musical diversity" of the Billboard Top 100 changing over time? Let's find out. We'll measure the musical diversity of given year as the number of unique songs that appeared in the Billboard Top 100 that year. Make a line graph that plots this measure of musical diversity over the years. The x axis should show the year, while the y axis should show the number of unique songs appearing at any position on the Billboard Top 100 chart in any week that year. For this part, please filter the data set so that it excludes the years 1958 and 2021, since we do not have complete data on either of those years. Give the figure an informative caption in which you explain what is shown in the figure and comment on any interesting trends you see.
+
+There are number of ways to accomplish the data wrangling here. We offer you two hints on two possibilities:
+
+You could use two distinct sets of data-wrangling steps. The first set of steps would get you a table that counts the number of times that a given song appears on the Top 100 in a given year. The second set of steps operate on the result of the first set of steps; it would count the number of unique songs that appeared on the Top 100 in each year, irrespective of how many times it had appeared.
+You could use a single set of data-wrangling steps that combines the length and unique commands.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE} 
+#Data Wrangling, getting songs organized by year 
+unique_songs = billboard %>%
+  filter(year>1958 & year<2022) %>%
+  group_by(year) %>%
+  summarize(songs_in_a_year=length(unique(song)))
+#Plotting the Data
+ggplot(unique_songs) + 
+  geom_line(aes(x=year, y=songs_in_a_year)) + 
+  ggtitle("Number of Unique Entries on the Hot 100") + 
+  labs(y = "Number of Entires", x = "Years",) +
+  theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+```
+
+*The number of Hot 100 Entries from 1958 through 2021 is depicted in this graph. It's interesting to observe the gradual drop in music diversity from 1970 to an all-time low in the early 2000s, and we can clearly see how iTunes and streaming began to have an impact starting around 2005. Maybe a consolidation of genres in the zeitgeist might be blamed for the reduction of musical diversity in the 20th century.*
+  
+### Part C
+Let's define a "ten-week hit" as a single song that appeared on the Billboard Top 100 for at least ten weeks. There are 19 artists in U.S. musical history since 1958 who have had at least 30 songs that were "ten-week hits." Make a bar plot for these 19 artists, showing how many ten-week hits each one had in their musical career. Give the plot an informative caption in which you explain what is shown.
+
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE} 
+tenweek_hit = billboard %>%
+  filter(weeks_on_chart >=10) %>%
+  group_by(performer) %>%
+  filter(length(unique(song)) >=30) %>%
+  summarize(number_of_hits=length(unique(song)))
+           
+ ggplot(tenweek_hit) + 
+  geom_col(aes(fct_reorder(performer, number_of_hits), number_of_hits)) +
+  labs(x="Performer", y="Number of Hot 100 Entries",  title="10-week  in  Performers in U.S. history") +
+  coord_flip() + 
+   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+   
+```
+\newpage
+
+## Visual story telling part 1: green buildings
+
+The EDA has been carried out in multiple phases to arrive at a final conclusion about building a Green building or Non-green buildings  
+
+* Step 1: Perform exploratory data analysis on **all buildings** in the dataset to find any insights at a macro level  
+
+* Step 2: Perform EDA by **splitting the buildings in to Green and Non-Green**  
+
+* Step 3: Perform EDA by considering **local markets(clusters)** and derive insights  
+
+Importing the data and all the required libraries  
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+green_df = read.csv('greenbuildings.csv',na.strings = '')
+```
+#### Step 1: Analysis on all buildings  
+
+1.Obtain a brief idea about the columns in the dataset  
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+str(green_df)
+
+green_buildings = subset(green_df,green_df$green_rating == 1)
+non_green_buildings = subset(green_df,green_df$green_rating!= 1)
+
+# Median rent in green buildings and non-green buildings
+print(paste("Median rent of green buildings : ", median(green_buildings$Rent)))
+print(paste("Median rent of green buildings : ", median(non_green_buildings$Rent)))
+
+# Leasing -rate in green buildings vs non-green buildings
+green_df$green_rating = as.factor(green_df$green_rating)
+leasing_plot <- ggplot(green_df, aes(x = green_rating, y = leasing_rate)) +
+        geom_boxplot(colour = "grey", fill = "#CC9900") + theme_classic() + 
+  labs(x = "Green and Non-Green", y = "Rent",title = "Leasing Rate",subtitle = "All buildings") + theme(
+    axis.text.x = element_text(face="bold",color="black", size=8, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),
+    plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5)
+    )+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="red", fill="red")
+leasing_plot
+
+print(paste("Median leasing rate of green buildings : ", median(green_buildings$leasing_rate)))
+print(paste("Median leasing rate of non green buildings : ", median(non_green_buildings$leasing_rate)))
+
+```
+* Green buildings have a higher occupancy rate when compared to non-green buildings  
+* As the stats guru, pointed out the median of green buildings($27.6) is higher than the median of non-green buildings($25). But he did not consider the effect of confouding variables while performing the analysis. In teh next section, we will check or the influence of confounding vairables on the Rent of green and non-green buildings  
+
+
+2. We will create some hypotheses using which we will steer through the data to understand if the data agrees with the respective hypotheses  
+a.Less leasing_rate might be a proxy for less demand for commercial real-estate  
+b.Rent decreases with age for buildings  
+c.Renovated buildings with age >30 years get higher rent than buidings with age < 30 without renovation  
+d.Buidings with amenities have higher rents than the other buildings
+e.class_a buildings have higher rent than the other buildings  
+
+Let's plot the respective distribution to find if the hypotheses can be supported using the relationships  
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# Leasing_rate
+leasing_rate = ggplot(green_df, aes(x=leasing_rate, y=Rent))+
+  theme_classic()+geom_point(colour = "darkolivegreen", size = 1.5,alpha = 0.5) + labs(x = "Leasing Rate", y = "Rent",title = "Leasing Rate Vs Rent",subtitle = "All buildings") + 
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+#Age
+age = ggplot(green_df,aes(x = age,y = Rent)) +
+  theme_classic()+geom_point(colour = "navyblue", size = 1.5,alpha = 0.5)+ labs(x = "Age", y = "Rent",title = "Age Vs Rent",subtitle = "All buildings") + 
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+#Renovations
+green_df$renovated = as.factor(green_df$renovated)
+renovation <- ggplot(green_df, aes(x = renovated, y = Rent)) +
+        geom_boxplot(colour = "grey", fill = "#CC9900") + theme_classic() + 
+  labs(x = "Renovation(Yes:1| No:0)", y = "Rent",title = "Renovation Vs Rent",subtitle = "All buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="red", fill="red")
+
+# Renovations in buildings older than 30 years
+renovation_30_years_more = subset(green_df,green_df$age >=30)
+renovation_30 <- ggplot(renovation_30_years_more, aes(x = renovated, y = Rent)) +
+        geom_boxplot(colour = "darkgrey", fill = "#33CC99") + theme_classic() + 
+  labs(x = "Renovation(Yes:1| No:0)", y = "Rent",title = "Old renovated buildings Vs Rent",subtitle = "All buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#999900", fill="red")
+
+#Amenities
+green_df$amenities = as.factor(green_df$amenities)
+amenities <- ggplot(green_df, aes(x = amenities, y = Rent)) +
+        geom_boxplot(colour = "lightgrey", fill = "#000066") + theme_classic() + 
+  labs(x = "Amenities", y = "Rent",title = "Amenities Vs Rent",subtitle = "All buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#00FF66", fill="red")  
+
+#class_a buildings
+green_df$class_a = as.factor(green_df$class_a)
+class_a <- ggplot(green_df, aes(x = class_a, y = Rent)) +
+        geom_boxplot(colour = "lightgrey", fill = "#000066") + theme_classic() + 
+  labs(x = "class_a", y = "Rent",title = "class_a Vs Rent",subtitle = "All buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#00FF66", fill="red")  
+
+grid.arrange(leasing_rate,age,renovation,renovation_30,amenities,class_a,ncol = 3)  
+```
+
+**Findings**:  
+
+* Age has no visible relation with Rent when all buildings are considered  
+
+* Buildings with Amenities and class_a quality material have slightly higher rent than the other buildings    
+
+#### Step 2: Comparison of different variables for Green and Non-Green buildings  
+Lets check the above hypotheses for Green and Non-Green buildings separtely to see if there is any influence  
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# Splitting the data into green and non-green buildings
+knitr::opts_chunk$set(fig.width=12, fig.height=8)
+green_buildings = subset(green_df,green_df$green_rating == 1)
+non_green_buildings = subset(green_df,green_df$green_rating!= 1)
+
+# Leasing_rate
+# Green
+leasing_rate_g = ggplot(green_buildings, aes(x=leasing_rate, y=Rent)) + 
+  theme_classic()+geom_point(colour = "darkolivegreen", size = 1.5,alpha= 0.5) + labs(x = "Leasing Rate", y = "Rent",title = "Leasing Rate Vs Rent",subtitle = "Green buildings") + ylim(0,250) +
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+# Non Green
+leasing_rate_ng = ggplot(non_green_buildings, aes(x=leasing_rate, y=Rent)) + 
+  theme_classic()+geom_point(colour = "darkolivegreen", size = 1.5,alpha= 0.5) + labs(x = "Leasing Rate", y = "Rent",title = "Leasing Rate Vs Rent",subtitle = "Non Green buildings") + ylim(0,250) +
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+#Age
+age_g = ggplot(green_buildings,aes(x = age,y = Rent)) + 
+  theme_classic()+geom_point(colour = "navyblue", size = 1.5,alpha = 0.5)+ labs(x = "Age", y = "Rent",title = "Age Vs Rent",subtitle = "Green buildings") + ylim(0,250) +
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+#Renovations
+
+renovation_g <- ggplot(green_buildings, aes(x = renovated, y = Rent)) +
+  geom_boxplot(colour = "grey", fill = "#CC9900") + ylim(0,250) + theme_classic() + 
+  labs(x = "Renovation(Yes:1| No:0)", y = "Rent",title = "Renovation Vs Rent",subtitle = "Green buildings") + 
+  theme(
+    axis.text.x = element_text(face="bold",color="black", size=8, angle=0),
+    axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),
+    plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5)
+    )+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="red", fill="red")
+
+# Renovations in buildings older than 30 years
+renovation_30_years_more = subset(green_buildings,green_buildings$age >=30)
+renovation_30_g <- ggplot(renovation_30_years_more, aes(x = renovated, y = Rent)) +
+        geom_boxplot(colour = "darkgrey", fill = "#33CC99") + theme_classic() + ylim(0,250) + labs(x = "Renovation(Yes:1| No:0)", y = "Rent",title = "Old renovated buildings Vs Rent",subtitle = "Green buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#999900", fill="red")
+
+#Amenities
+amenities_g <- ggplot(green_buildings, aes(x = amenities, y = Rent)) +
+        geom_boxplot(colour = "lightgrey", fill = "#000066") + theme_classic() + ylim(0,250) + labs(x = "Amenities", y = "Rent",title = "Amenities Vs Rent",subtitle = "Green buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#00FF66", fill="red")  
+
+#class_a buildings
+class_a_g <- ggplot(green_buildings, aes(x = class_a, y = Rent)) +
+        geom_boxplot(colour = "lightgrey", fill = "#000066") + theme_classic() + ylim(0,250) +  labs(x = "class_a", y = "Rent",title = "class_a Vs Rent",subtitle = "Green buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#00FF66", fill="red")  
+
+
+## Non-Green buildings
+leasing_rate_ng = ggplot(non_green_buildings, aes(x=leasing_rate, y=Rent)) + theme_classic()+geom_point(colour = "darkolivegreen", size = 1.5) + labs(x = "Leasing Rate", y = "Rent",title = "Leasing Rate Vs Rent",subtitle = "Non-Green buildings") + 
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),
+        plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+
+#Age
+age_ng = ggplot(non_green_buildings,aes(x = age,y = Rent)) + geom_point() + 
+  theme_classic()+geom_point(colour = "navyblue", size = 1.5)+ labs(x = "Age", y = "Rent",title = "Age Vs Rent",subtitle = "Non-Green buildings") + 
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+#Renovations
+
+renovation_ng <- ggplot(non_green_buildings, aes(x = renovated, y = Rent)) +
+        geom_boxplot(colour = "grey", fill = "#CC9900") + theme_classic() + 
+  labs(x = "Renovation(Yes:1| No:0)", y = "Rent",title = "Renovation Vs Rent",subtitle = "Non-Green buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="red", fill="red")
+
+# Renovations in buildings older than 30 years
+renovation_30_years_more = subset(non_green_buildings,non_green_buildings$age >=30)
+renovation_30_ng <- ggplot(renovation_30_years_more, aes(x = renovated, y = Rent)) +
+        geom_boxplot(colour = "darkgrey", fill = "#33CC99") + theme_classic() + 
+  labs(x = "Renovation(Yes:1| No:0)", y = "Rent",title = "Old renovated buildings Vs Rent",subtitle = "Non-Green buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#999900", fill="red")
+
+#Amenities
+amenities_ng <- ggplot(non_green_buildings, aes(x = amenities, y = Rent)) +
+        geom_boxplot(colour = "lightgrey", fill = "#000066") + theme_classic() + 
+  labs(x = "Amenities", y = "Rent",title = "Amenities Vs Rent",subtitle = "Non-Green buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#00FF66", fill="red")  
+
+#class_a buildings
+class_a_ng <- ggplot(non_green_buildings, aes(x = class_a, y = Rent)) +
+        geom_boxplot(colour = "lightgrey", fill = "#000066") + theme_classic() + 
+  labs(x = "class_a", y = "Rent",title = "class_a Vs Rent",subtitle = "Non-Green buildings") + theme(axis.text.x = element_text(face="bold",color="black", size=8, angle=0), axis.text.y = element_text(face="bold", color="black", size=8,    angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))+ stat_summary(fun.y=median, geom="point", shape=20, size=3, color="#00FF66", fill="red")
+
+grid.arrange(leasing_rate_g,leasing_rate_ng,age_g,age_ng,renovation_g,renovation_ng,renovation_30_g,renovation_30_ng,amenities_g,amenities_ng,class_a_g,class_a_ng,ncol = 2)
+
+```
+**Findings**:   
+
+* Older Green Buildings have the possibility of charging higher rents when they are renovated   
+
+* There are no variables that affect the distribution of rent even after the buildings are split into green and non-green buildings  
+
+#### Step 3: Deep Diving into some of the potential variables to see the difference between rents between green and non-green buildings    
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+##### Subsetting for Age
+green_buildings_by_age = subset(green_df,green_df$green_rating == 1 & green_df$age <= 30 & green_df$net ==0)
+non_green_buildings_by_age = subset(green_df,green_df$green_rating!= 1 & green_df$age <= 30 & green_df$net ==0)
+
+#Age plots and rent
+rent_g_by_age = ggplot(green_buildings_by_age,aes(x = age,y = Rent)) + ylim(0,150) +
+  theme_classic()+geom_point(colour = "navyblue", size = 1.5, alpha = 0.5)+ labs(x = "Age", y = "Rent",title = "Age(<=30) Vs Rent",subtitle = "Green buildings") + 
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+rent_ng_by_age = ggplot(non_green_buildings_by_age,aes(x = age,y = Rent)) +
+ ylim(0,150) + theme_classic()+geom_point(colour = "navyblue", size = 1.5, alpha = 0.5)+ labs(x = "Age", y = "Rent",title = "Age(<=30) Vs Rent",subtitle = "Non-Green buildings") + 
+  theme(axis.text.x =     
+          element_text(face="bold",color="black", size=8, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=8, angle=0),plot.title = element_text(hjust = 0.5),plot.subtitle = element_text(hjust = 0.5))
+
+grid.arrange(rent_g_by_age,rent_ng_by_age,ncol = 2)
+print(paste("Median rent of green buildings less than 30 years of age:",median(green_buildings_by_age$Rent)))
+print(paste("Median rent of non - green buildings less than 30 years of age:",median(non_green_buildings_by_age$Rent)))
+
+```
+**Findings:**    
+* Age of the building does not affect the rent of the buildings as the green buildings have consistently higher rents across ages  
+
+* After exploring multiple variables, it is clear that there is no one variable that affects the rent and clearly people are willing to pay more rent based on the green perception of the building although there is no way to quantify that experience
+
+#### Step 4: As it is evident that people are willing to pay more for the green buildings,lets come up with an estimate for the returns on building a green building    
+
+1.Lets consider a local market(cluster) to check the probability of receiving a particular amount of rent  
+* Let us check the distribution of cluster rents to understand the local markets  
+* You can observe that more than 50% of the markets have rent less than $25 rent  
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# Histogram of cluster rents
+hist(unique(green_df$cluster_rent),main = paste("Histogram of Cluster rent"),xlab = 'Rent')
+abline(v = median(unique(green_df$cluster_rent)), col="red", lwd=3, lty=2)
+```
+**We can further calculate the number of local markets in which the rent for green building is higher than the median cluster rent as median is more robust to outliers**
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+cluster_quants = ddply(green_df,.(cluster), function(x)quantile(x$Rent))[c('cluster','50%')]
+
+temp = merge(green_buildings,cluster_quants,by = 'cluster')
+more_rent_green = subset(temp,temp$'Rent' >= temp$'50%')
+less_rent_green = subset(temp,temp$'Rent' < temp$'50%')
+
+# Median rent calculations have been performed using this code
+# abs(mean(more_rent_green$'Rent' - more_rent_green$'50%'))
+# abs(mean(less_rent_green$'Rent' - less_rent_green$'50%'))
+# abs(mean(temp$'Rent' - temp$'50%'))
+```
+* Green buildings have higher rents than the median rents in more than 75% of the local markets and on an averge it is $4.89    
+* In about 25% of the local markets, green buildings have lesser rent than the median rents and the value is $3 on an average    
+* With these observations,we can conclude that there is more than 75% chance that you will earn higher rents than the average in the local markets with a value more than $4.89       
+
+2.Estimate for calculating the returns on building a green building  
+* If we consider the mean of the differences between green buildings and the median local market rents, we see that green buildings get ~$3 more than the non-green builings    
+
+*Adjusting the estimates of the stats guru, by 0.4 , we can see that an extra $750,000 revenue can be earned by building a green building.*
+
+*Based on the extra revenue, we can recuperate the costs in 6.66 years and even with 90% occupancy as is evident from data, the builder can start earning profits after 7.4 years*
+
+
+## Visual story telling part 2: Capital Metro data
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+capmetro_UT<- read.csv("capmetro_UT.csv")
+colSums(is.na(capmetro_UT))
+```
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+capmetro_UT["net_outflow"] <- capmetro_UT$boarding - capmetro_UT$alighting
+head(capmetro_UT, 10)
+```
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+colnames(capmetro_UT)
+dim(capmetro_UT)
+```
+
+#### Volume of Boardings by month
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE,fig.align='center'}
+
+
+ggplot(capmetro_UT, aes(month)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()+ggtitle("Volume of Boardings by month")+theme(plot.title = element_text(hjust = 0.5))
+
+```
+                                 
+                                 
+                                 
+#### Volume of Alightings by month
+
+``````{r,warning=FALSE,fig.align='center',echo=FALSE,fig.align='center'}
+
+
+ggplot(capmetro_UT, aes(month)) +
+  geom_bar(fill = "#0073C2FF") +
+  theme_pubclean()+ggtitle("Volume of Alightings by month")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+                            
+                                 
+
+#### Volume of Boardings by day_of_week
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE,fig.align='center'}
+
+ggplot(capmetro_UT, aes(day_of_week)) +
+  geom_bar(fill = "#0073C2FF") +ylim(0,1000)+
+  theme_pubclean()+ggtitle("Count of Boardings per day of a week")+theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+
+#### Correlation between boarding and alighting 
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+ cor(capmetro_UT$boarding,capmetro_UT$alighting)
+
+```
+#### Analysis
+
+#### Comparison of mean boardings and mean alightings by month with difference of alighting and boarding included
+
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+newcapmetro = capmetro_UT %>% group_by(month,hour_of_day) %>% summarise(mean_boarding = mean(boarding),mean_alighting = mean(alighting), mean_netoutflow = mean(net_outflow))
+
+
+Legend = rep("Boarding", 48)
+alighting_legend = rep("Alighting", 48)
+net_outflow_legend = rep("net_outflow",48)
+ggplot(newcapmetro, aes(hour_of_day)) + geom_line(aes(y=mean_boarding, color=Legend), group=1) + geom_line(aes(y=mean_alighting, color=alighting_legend), group=1) +  geom_line(aes(y=mean_netoutflow, color=net_outflow_legend), group=1) + labs(x = "Month", y = "Average number of people", title = "Comparison of boarding vs alighting average with net_outflow ") + facet_grid(~month, scale='free_y')
+
+
+```
+
+Average number of boardings and alightings  are plotted and compared for all 3 months. Mean number of boardings and alightings seem to be higher for October month followed by September and November, the reason being UT students will start coming to classes in September and it takes time for them to get to know about Metro , peak goes up in October and finally intensity of boardings and alightings comes down in November because of thanksgiving
+
+
+#### Comparison of mean boardings and mean alightings by month for each day of a week
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+
+df_updated = capmetro_UT %>% group_by(month,day_of_week) %>% summarise(mean_boarding = mean(boarding),mean_alighting = 
+                                                                         mean(alighting))
+
+
+
+Legend = rep("Boarding", 21)
+alighting_legend = rep("Alighting", 21)
+ggplot(df_updated, aes(day_of_week)) + geom_line(aes(y=mean_boarding, color=Legend), group=1) + geom_line(aes(y=mean_alighting, color=alighting_legend), group=1)  + labs(x = "Day_of_week", y = "Average number of people", title = "Comparison of boarding vs alighting average for each day of week") + facet_grid(~month, scale='free_y') + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+The pattern of average number of people boarding and alighting for each day of a week is same for all the months and it is observed  for weekends that the intensity of boardings and alightings is less when compared to week days as the students will not be coming to university 
+
+
+#### Comparison of mean boardings and mean alightings by month with temperature included
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+dataset_new = capmetro_UT %>% group_by(month,hour_of_day) %>% summarise(mean_boarding = mean(boarding),mean_alighting = mean(alighting), mean_temperature = mean(temperature))
+
+
+Legend = rep("Boarding", 48)
+alighting_legend = rep("Alighting", 48)
+temperature_legend = rep("temperature",48)
+ggplot(dataset_new, aes(hour_of_day)) + geom_line(aes(y=mean_boarding, color=Legend), group=1) + geom_line(aes(y=mean_alighting, color=alighting_legend), group=1) +  geom_line(aes(y=mean_temperature, color=temperature_legend), group=1) + labs(x = "Hour_of_day", y = "Average number of people", title = "Comparison of boarding vs alighting avg for each hour of day with temp") + facet_grid(~month, scale='free_y')
+
+```
+
+Average boardings and Average alightings are plotted for each month with temperature included and it is noticed that temperature is not impacting the boardings and alightings
+
+
+\newpage
+
+## Portfolio Modelling
+
+**I chose the following ETF's trying to diversiy my portfolio :**
+
+* SPY-  SPDR S&P 500 ETF Trust, SPY is one of the largest and most heavily-traded ETFs in the world, offering exposure to one of the most well known equity benchmarks. While SPY certainly may have appeal to investors seeking to build a long-term portfolio and include large cap U.S. stocks, this fund has become extremely popular with more active traders as a way to toggle between risky and safe assets. 
+
+* TLT -  iShares 20+ Year Treasury Bond ETF , This ETF is one of the most popular options for investors seeking to establish exposure to long-dated Treasuries, an asset class that is light on credit risk but may offer attractive yields thanks to an extended duration and therefore material interest rate risk.
+
+
+* LQD - iShares iBoxx $ Investment Grade Corporate Bond ETF,This ETF is the most popular option for investors looking to gain exposure to investment grade corporate bonds, making it a useful tool for those looking to access a corner of the bond market that should be a core component of any long-term, buy-and-hold portfolio. LQD is probably of limited use for short term traders, who will prefer to utilize more extreme ends of the risk spectrum to capitalize off of short term movements in asset prices and risk tolerance. 
+
+* EEM- iShares MSCI Emerging Markets ETF, EEM is one of the most popular ETFs in the world, and is one of the oldest products on the market offering exposure to stock markets of emerging economies.
+
+* VNQ-Vanguard Real Estate ETF,The Vanguard Real Estate Trust (VNQ) offers broad exposure to U.S. equity REITs, alongside a small allocation to specialized REITs and real estate firms. 
+
+
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE,warning=FALSE}
+my_stocks <- c("SPY", "TLT", "LQD", "EEM", "VNQ")
+getSymbols(my_stocks, from = "2016-08-15")
+
+# Adjust theses stocks for splits, dividends, etc.
+
+for (stock in my_stocks){
+  expr <- paste0(stock, "a <- adjustOHLC(", stock ,")")
+  eval(parse(text = expr))
+}
+
+all_returns <- cbind(ClCl(SPYa), ClCl(TLTa), ClCl(LQDa),ClCl(EEMa),ClCl(VNQa))
+all_returns <- as.matrix(na.omit(all_returns))
+summary(all_returns)
+
+```
+
+The prices are daily starting from 3rd January 2007. To get an idea of the kind of returns that they have provided, let's calculate the percent changes between two closing prices of each of these assets.
+
+Based on the summary statistics of the stocks, we can infer that SPY,TLT,LQD are in the safe category as their returns are in a resaonable range. 
+
+* TLT with +75% and -66%
+* LQD with +-9% 
+* SPY with +14% and -10%  
+
+*During all the strategies, i have considered 8000 bootstrap samples from the past and plotted the 20 day returns for all the 3 strategies below*
+
+### Strategy one - Even split of my assets
+
+An even split of my assets would be 20% across all the ETF's.Here, we assume that we re-distribute the total capital at the end of each day equally amongst the five ETFs.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+strategy_1 <- matrix(0, nrow = 8000, ncol = 20)
+
+for(i in 1:8000){
+  
+  wealth_total <- 100000
+
+  for (j in 1:20){
+    
+    wealth <- wealth_total
+    
+    split_1 <- c(0.2, 0.2, 0.2, 0.2, 0.2)
+  
+    strategy_split_1 <- wealth*split_1
+  
+    sample_day <- mosaic::resample(all_returns, 1, orig.ids = FALSE)
+  
+    sample_return <- strategy_split_1 + strategy_split_1* sample_day
+    
+    wealth_total <- sum(sample_return)
+  
+    strategy_1[i,j] <- wealth_total
+  }
+}
+
+# plot the profit distribution
+ggplot(mapping = aes(strategy_1[,20] - 100000)) +
+  geom_histogram(bins = 20, color = 'black', fill = 'white') +
+  theme_minimal() +
+  labs(x = "Net Profit",
+       y = "Frequency",
+       title = "Risk of Loss",
+       subtitle = "Strategy 1")
+```
+
+The above histogram shows the difference between final amount at the end of 20 days and the initial wealth invested. Negtives indicate losses and positive means profits. The value at risk at the 5% level is $ `r quantile(strategy_1[,20] - 100000, 0.05)`
+
+### Strategy two - Safer than even split
+
+We notice that *SPY*, *TLT* and *LQD* are the safe bets in the summary stats.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+strategy_2 <- matrix(0, nrow = 8000, ncol = 20)
+
+for(i in 1:8000){
+  
+  wealth_total <- 100000
+
+  for (j in 1:20){
+    
+    wealth <- wealth_total
+    
+    split_2 <- c(0.2, 0.4, 0.4, 0, 0)
+  
+    strategy_split_2 <- wealth*split_2
+  
+    sample_day <- mosaic::resample(all_returns, 1, orig.ids = FALSE)
+  
+    sample_return <- strategy_split_2 + strategy_split_2* sample_day
+    
+    wealth_total <- sum(sample_return)
+  
+    strategy_2[i,j] <- wealth_total
+  }
+}
+
+# plot the profit distribution
+ggplot(mapping = aes(strategy_2[,20] - 100000)) +
+  geom_histogram(bins = 20, color = 'black', fill = 'white') +
+  theme_minimal() +
+  labs(x = "Net Profit",
+       y = "Frequency",
+       title = "Risk of Loss",
+       subtitle = "Strategy 2")
+```
+
+The above histogram shows the difference between final amount at the end of 20 days and the initial wealth invested. Negtives mean losses and positive means profits. The value at risk at the 5% level is $ `r quantile(strategy_2[,20] - 100000, 0.05)`
+
+### Strategy three - Aggressive strategy
+
+Similarly, we notice that *VNQ* and *EEM* are the riskier portfolios due to their volatile nature. Since we are going with aggressive strategy we invest more in EEMs due to the possibility of a very large return on my investment.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+set.seed(99)
+strategy_3 <- matrix(0, nrow = 8000, ncol = 20)
+
+for(i in 1:8000){
+  
+  wealth_total <- 100000
+
+  for (j in 1:20){
+    
+    wealth <- wealth_total
+    
+    split_3 <- c(0, 0, 0, 0.5, 0.5)
+  
+    strategy_split_3 <- wealth*split_3
+  
+    sample_day <- mosaic::resample(all_returns, 1, orig.ids = FALSE)
+  
+    sample_return <- strategy_split_3 + strategy_split_3* sample_day
+    
+    wealth_total <- sum(sample_return)
+  
+    strategy_3[i,j] <- wealth_total
+  }
+}
+
+# plot the profit distribution
+ggplot(mapping = aes(strategy_3[,20] - 100000)) +
+  geom_histogram(bins = 20, color = 'black', fill = 'white') +
+  theme_minimal() +
+  labs(x = "Net Profit",
+       y = "Frequency",
+       title = "Risk of Loss",
+       subtitle = "Strategy 3")
+```
+
+The above histogram shows the difference between final amount at the end of 20 days and the initial wealth invested. Negtives mean losses and positive means profits. The value at risk at the 5% level is $ `r quantile(strategy_3[,20] - 100000, 0.05)`
+
+### Results
+
+Looking at the bootstrap resamples and the related value at risk at 5%, we see that -
+
+*1. Strategy one - Even split of my assets - has a value at risk at 5% of $`r quantile(strategy_1[,20] - 100000, 0.05)`. We would end up with around USD `r (mean(strategy_1[,20]))` on average with a possibility to even reach USD `r (max(strategy_1[,20]))`*
+
+*2. Strategy two - Safer than even split - has a value at risk at 5% of $`r quantile(strategy_2[,20] - 100000, 0.05)`. The strategy to play safer shows in the results. On average we end up with around USD `r (mean(strategy_2[,20]))` and the max we can possibly make is USD `r max(strategy_2[,20])`.*
+
+*3. Strategy three - Aggressive strategy- has a value at risk at 5% of $`r quantile(strategy_3[,20] - 100000, 0.05)`. There is a super high risk with this investment. Although the average is still around USD `r mean(strategy_3[,20])`, we can possible more than double our money and end up with USD `r max(strategy_3[,20])` or lose a lot and end up with just USD `r min(strategy_3[,20])`.*
+
+
+
+\newpage
+
+## Clustering and PCA
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+wine <- read.csv('wine.csv')
+#Center and scale the data
+X= wine[, 1:11]
+X= scale(X, center=TRUE, scale= TRUE)
+# Extract the centers and scales from the rescaled data (which are named attributes)
+mu = attr(X,"scaled:center")
+sigma = attr(X,"scaled:scale")
+```
+### K-Means 
+
+* After scaling the data, I used the k-means clustering algorithm. I selected k = 2 because there were two types of wine, red and white, each having 25 starters. I compare the averages of chemical attributes for white wine and red wine in our original data with those of the clustered data to check if the k-means has clustered data points by wine color into red and white wine.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# Run k-means with 2 clusters and 25 starts
+kmeans_cluster = kmeans(X, 2, nstart=25)
+# Average values of all the chemical properties grouped by red or white
+options(dplyr.width =Inf)
+wine%>%
+  group_by(color)%>%
+  summarize_all(mean)
+# Average values of all the chemical properties grouped by cluster
+kmeans_cluster$center[1,]*sigma + mu
+kmeans_cluster$center[2,]*sigma + mu
+```
+#### Inference : 
+
+* When we compare the averages of red and white wine chemical characteristics in our original data to the averages of red and white wine chemical properties in clustered data, we can see that the averages of chemical properties for red wine in both original and k-means clustered data are nearly the same. Similarly, the averages of chemical attributes for white wine are nearly identical in both the original and clustered data. This suggests that k-means is easily capable of differentiating between red and white wines.
+
+* To further validate this, I created a confusion matrix. In the table, we can observe that k-means grouped data fairly accurately by wine color. With a precision of 98.5 percent, we may infer that k-means clustering performed admirably in terms of dimension reduction.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+wine[kmeans_cluster$cluster==1, 'cluster'] <- "red"
+wine[kmeans_cluster$cluster==2, 'cluster'] <- "white"
+kmeans_table = xtabs(~color+cluster, data=wine) 
+print(kmeans_table)
+sum(diag(kmeans_table))/sum(kmeans_table)
+```
+### PCA
+
+* Following k-means clustering technique, I performed Principal Component Analysis (PCA). The first three principal components account for 64.3 percent of the total variation in the data set, as seen in the table below. As a result, I clustered using the first three components.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+#PCA
+X= wine[, 1:11]
+X= scale(X, center=TRUE, scale= TRUE)
+PCAwine = prcomp(X, scale= TRUE)
+summary(PCAwine)
+
+
+
+```
+
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+round(PCAwine$rotation[,1:3], 3)
+scores = PCAwine$x[,1:3]
+cluster_pca = kmeans(scores, 2, nstart=25)
+qplot(scores[,1], scores[,2], data=wine, color=factor(cluster_pca$cluster))
+wine[cluster_pca$cluster==1, 'cluster'] <- "red"
+wine[cluster_pca$cluster==2, 'cluster'] <- "white"
+pca_table = xtabs(~color+cluster, data =wine) 
+print(pca_table)
+sum(diag(pca_table))/sum(pca_table)
+```
+#### Inference :
+
+* The clustering performed by using the scores from three principal components was very effective. The accuracy level was 98.3 percent. However, PCA is not as simple as k-means. I formed the clusters using the scores from the principal components. Because the accuracy of k-means is significantly greater and it is straightforward, I conclude that using the k-means technique for the supplied data makes more sense.
+
+* The quality of wine is rated on a scale of 1 to 10, but there are no ratings of 1, 2, or 10 in our data set. As a result, the wine in our data set was rated between 2 and 9, inclusive. I used k-means with k= 7 and 25 starts.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+unique(wine$quality)
+kmeans_cluster_2 = kmeans(X, 7, nstart=50,iter.max = 30)
+table3 = xtabs(~wine$quality + kmeans_cluster_2$cluster)
+print(table3)
+fviz_cluster(kmeans_cluster_2,data=wine[,1:12],
+             geom = "point",
+             ellipse.type = "convex",
+             ggtheme = theme_bw()
+             )
+
+
+```
+
+* The confusion matrix shows that k-means clustering was unable to distinguish between different qualities of wine. For example, each cluster has a sizable number of wines rated 5, 6, and 7. There is no noticeable difference. Also looking at the clustered data we cannot come to a strong conclusion as there are overalapping clusters.
+
+\newpage
+
+## Market segmentation
+
+
+Objective : To create market segments based on the user interests and identify the profiles of those segments  
+
+* Explore the data for correlated interests  
+* Normalize the data and perform clustering  
+* Profile the clusters after k-means clustering  
+
+1. 4 columns(chatter,spam,adult,uncategorised) were removed
+ 
+2. Scaling was done on raw data
+ 
+3. Hierarchical clustering was performed on raw data and it was found the observations werenot entirely conclusive. The clusters also were not properly distinct.The objective of our experiment i.e segmentation was not being met properly  So we decided to go a step ahead and do PCA on the raw data and then make it go through K-means custering to get improved clustering.
+
+#### Explore the data for correlated interests  
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+analysis = read.csv('social_marketing.csv',na.strings = '')
+str(analysis)
+init_names <- names(analysis)
+init_names[1] <- 'User'
+names(analysis) <- init_names
+head(analysis[,1:6])
+
+```
+
+
+* Each column represents an area of interest that a sample twitter follower would have tweeted about during the 7 day observation period.
+* Each cell in that column is the number of tweets that fell into that interest area.
+* We have about 7882 users with 36 areas of interest and one column for uncategorised. 
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+total_tweets <- data.frame(colSums(analysis[,-1]))
+
+total_tweets['Interest'] <- rownames(total_tweets)
+rownames(total_tweets) <- NULL
+
+names(total_tweets) <- c("Tweet_Count", "Interest")
+total_tweets <- total_tweets[order(total_tweets$Tweet_Count, decreasing = TRUE), ]
+
+ggplot(total_tweets, aes(x = reorder(Interest, -Tweet_Count), y = Tweet_Count)) + 
+  geom_bar(stat = "identity",fill="#02daaf",colour='black') +
+  coord_flip() + 
+  theme_minimal() +
+  scale_y_continuous("Tweet Counts") +
+  scale_x_discrete("Interest Area") +
+  ggtitle("Number of tweets by Area of Intrest ")
+
+plot(density(total_tweets$Tweet_Count),
+    col="yellow",
+    main="Density Plot for Tweet_Count",
+    xlab="Tweet Count",
+    ylab="Density")
+polygon(density(total_tweets$Tweet_Count),
+        col="#ccff66")
+  
+```
+**Findings:**   
+
+1. The most tweets fall into the chatter category which doesn't tell us a lot about the audience. However, we do see many tweets about health, cooking, gaming, photo sharing, fitness and university which sort of hints towards  fitness , mostly young twitter following. We have to check if there exists a cluster of interests between the users.
+
+2. It is very clear that the tweet_count per variable is almost 8k
+
+```{r,warning=FALSE,fig.align='center', fig.width=12,fig.height=15}
+#Removing the labels from the data
+#removing 4 not needed columns
+analysis$chatter<- NULL
+analysis$spam <- NULL
+analysis$adult <- NULL
+analysis$uncategorised <- NULL 
+cormat <- cor(analysis[c(2:33)])
+ggcorrplot(cormat,hc.order = TRUE,lab = TRUE)
+```
+
+
+* Shopping and photo-sharing are positively correlated     
+* College_uni and online_gaming stands out with a strong positive correlation   
+* Health_nutrition,peronal_fitness and outdoors have a high positive correlation showing these people are health conscious  
+* Fashion and beauty have a strong postive correlation  
+
+We can include all the variables in the cluster analysis to understand if the same points appear after profiling the clusters  
+
+
+```{r figmidcity22, echo=FALSE,include=FALSE,fig.align='center'}
+
+scale(analysis[,2:33], center = TRUE, scale = TRUE)
+
+fviz_nbclust(analysis[,2:33], kmeans, method = "wss") +
+    geom_vline(xintercept = 4, linetype = 2)+
+  labs(subtitle = "Elbow method")
+
+dist_mat <- dist(analysis[,2:33], method = 'euclidean')
+hclust_avg = hclust(dist_mat, method='average')
+clustercut = cutree(hclust_avg, k=6)
+summary(factor(clustercut))
+
+
+```
+
+```{r figmidcity23, echo=FALSE,include=FALSE}
+cluster_final <- cbind(analysis, clustercut)
+cluster_final
+
+avg <- aggregate(cluster_final, list(cluster_final$clustercut), mean)
+avg$clustercut <- paste("Clust_", avg$clustercut, sep = '')
+
+avg$Group.1 <- NULL
+avg$X <- NULL
+
+```
+
+```{r figmidcity233, echo=FALSE}
+row.names(avg) <- avg$clustercut
+avg$clustercut <- NULL
+
+avg <- as.data.frame(t(avg))
+
+```
+
+
+
+```{r figmidcity1022,echo=FALSE,include=FALSE}
+avg$type <- row.names(avg)
+main <- avg
+#Clust 1
+ggplot(main, aes(x =reorder(type, -Clust_1) , y=Clust_1)) +
+  geom_bar(stat="identity", position ="dodge") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Clust 1",
+        x ="Tweet Categories", y = "Values")
+#clust 2 
+ggplot(main, aes(x =reorder(type, -Clust_2) , y=Clust_2)) +
+  geom_bar(stat="identity", position ="dodge") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Clust 2",
+        x ="Tweet Categories", y = "Values")
+#clust 3
+ggplot(main, aes(x =reorder(type, -Clust_3) , y=Clust_3)) +
+  geom_bar(stat="identity", position ="dodge") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Clust 3",
+        x ="Tweet Categories", y = "Values")
+#Clust 4
+ggplot(main, aes(x =reorder(type, -Clust_4) , y=Clust_4)) +
+  geom_bar(stat="identity", position ="dodge") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Clust 4",
+        x ="Tweet Categories", y = "Values")
+#clust 5
+ggplot(main, aes(x =reorder(type, -Clust_5) , y=Clust_5)) +
+  geom_bar(stat="identity", position ="dodge") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Clust 5",
+        x ="Tweet Categories", y = "Values")
+#clust 6
+ggplot(main, aes(x =reorder(type, -Clust_6) , y=Clust_6)) +
+  geom_bar(stat="identity", position ="dodge") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Clust 6",
+        x ="Tweet Categories", y = "Values")
+
+```
+
+#### PCA
+
+
+```{r,warning=FALSE,fig.align='center',warning=FALSE,include=FALSE,echo=FALSE}
+# Standardizing the variables before clustering
+scl_scaled <- scale(analysis[,3:33], center=TRUE, scale=TRUE)
+
+# # Extract the centers and scales from the rescaled data (which are named attributes)
+mu = attr(scl_scaled,"scaled:center")
+sigma = attr(scl_scaled,"scaled:scale")
+```
+
+```{r,warning=FALSE,fig.align='center', echo=FALSE, include=FALSE}
+pca_sm = prcomp(scl_scaled, scale=TRUE, center = TRUE)
+summary(pca_sm)
+plot(pca_sm, type= 'l')
+```
+
+
+```{r,warning=FALSE,fig.align='center', echo=FALSE}
+pca_var <-  pca_sm$sdev ^ 2
+pca_var1 <- pca_var / sum(pca_var)
+get_eigenvalue(pca_sm)
+```
+
+```{r,warning=FALSE,fig.align='center', echo=TRUE}
+fviz_eig(pca_sm)
+```
+
+* Since we can clearly see from the above graph and the summary table for after 10 components the eigen value drops below 1 , hence according to Kaiser Rule  we will consider 10 dimensions for PCA. 
+
+* Now we take that data from the PCA with 10 dimensions we will look at K-Means Clustering
+
+```{r,warning=FALSE,fig.align='center', echo=FALSE, include=FALSE,echo=TRUE}
+varimax(pca_sm$rotation[, 1:11])$loadings
+```
+
+```{r,warning=FALSE,fig.align='center', echo=FALSE,include=FALSE}
+scores = pca_sm$x
+pc_data <- as.data.frame(scores[,1:11])
+X <- pc_data
+```
+
+#### Normalize the data and perform k - means clustering      
+
+```{r,warning=FALSE,fig.align='center', echo = FALSE}
+# Determine number of clusters
+#Elbow Method for finding the optimal number of clusters
+# Compute and plot wss for k = 2 to k = 15.
+k.max <- 15
+data <- X 
+wss <- sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
+wss
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+```
+
+* We can see that there is a clear bend at 6 on the graph for elbow, so lets go with 6 clusters for K means
+
+```{r,warning=FALSE,fig.align='center', echo=FALSE,include=FALSE}
+
+clust1 = kmeans(scl_scaled, 6, nstart=15)
+#hard to visualized
+social_clust1 <- cbind(analysis, clust1$cluster)
+```
+
+
+**Cluster visualization**
+
+```{r,warning=FALSE,fig.align='center', echo=FALSE, include=TRUE}
+plotcluster(analysis[,3:33], clust1$cluster)
+```
+The clusters look  separated, as well as we can see many common points between clusters.Let's identify the characteristics of the clusters. 
+
+```{r,warning=FALSE,fig.align='center',echo = FALSE, include=FALSE}
+#cluster info to main data 
+social_clust1_main <- as.data.frame(cbind(clust1$center[1,]*sigma + mu, 
+                            clust1$center[2,]*sigma + mu,
+                            clust1$center[3,]*sigma + mu,
+                            clust1$center[4,]*sigma + mu,
+                            clust1$center[5,]*sigma + mu,
+                            clust1$center[6,]*sigma + mu))
+summary(social_clust1_main)
+#Change column names
+names(social_clust1_main) <- c('Cluster_1',
+                'Cluster_2',
+                'Cluster_3',
+                'Cluster_4',
+                'Cluster_5',
+                'Cluster_6')
+names(social_clust1)
+```
+
+```{r , fig.align='center', fig.height= 16, fig.width= 12,echo = FALSE}
+social_clust1_main$type <- row.names(social_clust1_main)
+#Cluster 1
+ggplot(social_clust1_main, aes(x =reorder(type, -Cluster_1) , y=Cluster_1)) + coord_flip() +
+  geom_bar(stat="identity", position ="dodge",fill="#FF6666",color='white') + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Cluster 1",
+        x ="Category", y = "Cluster centre values")
+
+#cluster 2 
+ggplot(social_clust1_main, aes(x =reorder(type, -Cluster_2) , y=Cluster_2)) + coord_flip() +
+  geom_bar(stat="identity", position ="dodge", fill="navy",color='white') + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Cluster 2",
+        x ="Category", y = "Cluster centre values")
+#Cluster 3
+ggplot(social_clust1_main, aes(x =reorder(type, -Cluster_3) , y=Cluster_3)) + coord_flip() +
+  geom_bar(stat="identity", position ="dodge", fill="black",color='white') + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Cluster 3",
+        x ="Category", y = "Cluster centre values")
+#Cluster 4
+ggplot(social_clust1_main, aes(x =reorder(type, -Cluster_4) , y=Cluster_4)) + coord_flip() +
+  geom_bar(stat="identity", position ="dodge", fill="lightblue",color='white') + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Cluster 4",
+        x ="Category", y = "Cluster centre values")
+#cluster 5
+ggplot(social_clust1_main, aes(x =reorder(type, -Cluster_5) , y=Cluster_5)) +  coord_flip() +
+  geom_bar(stat="identity", position ="dodge", fill="orange",color='white') + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Cluster 5",
+        x ="Category", y = "Cluster centre values")
+#cluster 6
+ggplot(social_clust1_main, aes(x =reorder(type, -Cluster_6) , y=Cluster_6)) + coord_flip() +
+  geom_bar(stat="identity", position ="dodge", fill="blue",color='black') + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle=-40, hjust=.1)) + 
+  labs(title="Cluster 6",
+        x ="Category", y = "Cluster centre values")
+```
+
+**Results**
+
+* There are multiple interesting profiles that came out of the clusters       
+* Cluster 1 - This Segment is full of people who are more focused on their diet/ are a more fitness oriented people as they tweet a lot about  *health nutrition, Personal_fitness, cooking*
+
+* Cluster 2 - This Cluster of people talk about  *photo_sharing, shopping and travel* which indicates that they are more into travel/exploring
+
+* Cluster 3 - People in this segment are into  *Photo sharing, cooking and Fashion the most*, this cannot give us any string conclusion, but we can assume that these people are into social media stuff where they talk about sharing things 
+
+* Cluster 4 -  This cluster is full of university students as they talk about *college_uni, online_gaming,photo_sharing*
+
+* Cluster 5 - In this segment tweets are more about *sports_fandom, religion, food * again no concrete conlusion from this set of people but we can assume these are a group of people in a set who are a all of one religion and stay together
+
+* Cluster 6 - This segment is profoundly middle aged people as they talk more about  *politics, travel, news*
+
+\newpage
+
+
+## The Reuters corpus
+
+#### Question:
+
+We are trying to solve a author attribution problem in our use case, as our data is relevant for this type of problem. Author attribution is the task of identifying the author of a given document. 
+
+#### Approach: 
+
+The approach we used to solve this problem is as follows
+
+**Data preprocessing :**
+
+```{r,warning=FALSE,fig.align='center', include=FALSE,echo=FALSE}
+training_author_names <- dir("./C50train")
+
+```
+
+* Step 1 - Read in the training text files from individual folders.
+
+All the text files that will be used for training are stored in distinct folders, each labeled with the author's name.  I created a function that will extract all of these texts and save them in a dataframe.
+
+```{r,warning=FALSE,fig.align='center', include=FALSE,echo=FALSE}
+training_file_list <- NULL
+training_class_labels <- NULL
+
+for (name in training_author_names){
+  training_file_list <- c(training_file_list, Sys.glob(paste0('./C50train/', name,'/*.txt')))
+  training_class_labels <- c(training_class_labels, rep(name, each = length(Sys.glob(paste0('./C50train/', name,'/*.txt')))))
+}
+
+# function that will read in the files
+reader = function(fname){
+  readPlain(elem = list(content = readLines(fname)), 
+            id = fname, language = 'en') }
+
+# read in the files and store them as a list
+all_files_train <- lapply(training_file_list, reader)
+
+file_names_train <- training_file_list %>%
+  strsplit("/") %>%
+  lapply(tail,n = 2) %>%
+  lapply(paste0, collapse = "") %>%
+  unlist
+
+
+training_vector <- NULL
+
+for(i in 1:length(file_names_train)){
+  training_vector <- c(training_vector, paste0(content(all_files_train[[i]]), collapse = " "))
+}
+
+# dataframe with text and document_id
+text_df_train <- data.frame(doc_id = file_names_train,
+                      text = training_vector)
+```
+
+
+* Step 2 - Convert data to corpus
+
+To perform any text analytics operation, we must first convert this to a corpus and then to a Document-Term matrix. This includes removing stopword, case conversion, removing special characters in end/begining, basically cleaning the text so that it can be used in for analysis.
+
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# convert the dataframe to a Corpus
+corpus_train <- VCorpus(DataframeSource(text_df_train))
+
+# pre-processing to remove punctuations, spaces, etc.
+corpus_train_cleaning <- corpus_train
+corpus_train_cleaning <- tm_map(corpus_train_cleaning, content_transformer(tolower)) # make everything lowercase
+corpus_train_cleaning <- tm_map(corpus_train_cleaning, content_transformer(removeNumbers)) # remove numbers
+corpus_train_cleaning <- tm_map(corpus_train_cleaning, content_transformer(removePunctuation)) # remove punctuation
+corpus_train_cleaning <- tm_map(corpus_train_cleaning, content_transformer(stripWhitespace)) ## remove excess white-space
+corpus_train_cleaning <- tm_map(corpus_train_cleaning, content_transformer(removeWords), stopwords("en")) # remove stop words
+
+# convert the corpus to a document term matrix
+train_DTM <- DocumentTermMatrix(corpus_train_cleaning)
+
+# remove sparse terms from the document term matrix matrix
+train_DTM <- removeSparseTerms(train_DTM, 0.99)
+
+
+# define a corpus object to store your initial documents
+mycorpus = corpus(as.data.frame(text_df_train))
+mydfm = dfm( mycorpus, 
+             tolower = TRUE, 
+             remove = stopwords(),  # this removes English stopwords
+             remove_punct = TRUE,   # this removes punctuation
+             remove_numbers = TRUE, # this removes digits
+             remove_symbol = TRUE,  # this removes symbols 
+             remove_url = TRUE )    # this removes urls
+
+# calculate word frequencies and return a data.frame
+word_frequencies = textstat_frequency( mydfm )
+word_frequencies[1:10]
+```
+We can see that the most used word across the train data are *said, percent ,million, year*, this should give us an understanding on what most data speaks about.
+
+This concludes the data preparation step of the  analysis. We do the same on test data as well.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE,include=FALSE}
+
+# read in the test documents
+testing_author_names <- dir("./C50test")
+
+testting_file_list <- NULL
+testting_class_labels <- NULL
+
+for (name in testing_author_names){
+  testting_file_list <- c(testting_file_list, Sys.glob(paste0('./C50test/', name,'/*.txt')))
+  testting_class_labels <- c(testting_class_labels, rep(name, each = length(Sys.glob(paste0('./C50test/', name,'/*.txt')))))
+}
+
+# read in the files and store them as a list
+testing_all_files <- lapply(testting_file_list, reader)
+
+# give each file a representative name
+
+testing_files_names <- testting_file_list %>%
+  strsplit("/") %>%
+  lapply(tail,n = 2) %>%
+  lapply(paste0, collapse = "") %>%
+  unlist
+
+# create a dataframe with doc_id as author-article and text as the text in that article
+text_vector_test <- NULL
+
+for(i in 1:length(testing_files_names)){
+  text_vector_test <- c(text_vector_test, paste0(content(testing_all_files[[i]]), collapse = " "))
+}
+
+
+# dataframe with text and document_id
+text_df_test <- data.frame(doc_id = testing_files_names,
+                            text = text_vector_test)
+
+# convert the dataframe to a Corpus
+test_corpus_raw <- VCorpus(DataframeSource(text_df_test))
+
+# pre-processing to remove punctuations, spaces, etc.
+test_corpus_preproc <- test_corpus_raw
+test_corpus_preproc <- tm_map(test_corpus_preproc, content_transformer(tolower)) # make everything lowercase
+test_corpus_preproc <- tm_map(test_corpus_preproc, content_transformer(removeNumbers)) # remove numbers
+test_corpus_preproc <- tm_map(test_corpus_preproc, content_transformer(removePunctuation)) # remove punctuation
+test_corpus_preproc <- tm_map(test_corpus_preproc, content_transformer(stripWhitespace)) ## remove excess white-space
+test_corpus_preproc <- tm_map(test_corpus_preproc, content_transformer(removeWords), stopwords("en")) # remove stop words
+
+# convert the corpus to a document term matrix
+DTM_test <- DocumentTermMatrix(test_corpus_preproc, 
+                                        control = list(dictionary = Terms(train_DTM)))
+
+# calculate the TF-IDF for each term in the DTM
+tfidf_train <- weightTfIdf(train_DTM)
+tfidf_test <- weightTfIdf(DTM_test)
+```
+
+
+
+**PCA**
+
+There are numerous features to choose from. Let's utilize PCA to extract the most significant variables from the 782 unique phrases stated above!
+
+```{r,warning=FALSE,fig.align='center', echo=FALSE,cache = TRUE}
+# Lets convert these to a matrix and run PCA
+X_train <- as.matrix(tfidf_train)
+X_test <- as.matrix(tfidf_test)
+
+pca_train = prcomp(X_train, scale=TRUE)
+
+
+plot(summary(pca_train)$importance[3,], main = "PCA Analysis Train", xlab = "Components",
+     ylab = "Cumulative % Variance Explained")
+
+```
+
+According to an overview of the variance described, 350 or so primary components account for roughly 50% of the total variance.
+
+1. In the training dataset, we will now take the first 350 PC scores from the PCA analysis as predictors.
+
+2. Additionally, we want our testing results to be at the same scale as the train data. We will scale the test data and multiply it by the component loadings obtained!
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE,include=FALSE}
+
+X_train <- pca_train$x[,1:350]
+X_train <- cbind(X_train, training_class_labels)
+loading_train <- pca_train$rotation[,1:350]
+
+# multiply to get a test matrix with the principal component values
+X_test_pc <- scale(X_test) %*% loading_train
+X_test_pc <- as.data.frame(X_test_pc)
+
+```
+
+**Model Training**
+
+Now that we have created the training and testing matrices, let's convert them to dataframes ready for modelling!
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# convert to a dataframe for use in modelling
+X_train <- as.data.frame(X_train)
+
+# convert the numeric variables to numeric class, excluding the class labels.
+for (name in names(X_train)){
+  if (name == "training_class_labels"){
+    next
+  }else{
+    X_train[[name]] <- as.numeric(as.character(X_train[[name]]))
+  }
+}
+
+# convert the output class to a factor!
+X_train$training_class_labels <- as.factor(X_train$training_class_labels)
+
+```
+
+*Model 1 - K-Nearest Neighbors*
+
+It makes sense that documents closer to each other (using similar terms) in terms of the Manhattan distance would be from the same author. Lets try K-Nearest Neighbors to predict the author for each document in the test set!
+
+1. We will use a K Nearest neighbor model and look for the best K-value in the range of 1-15.
+2. For the distance metric, we will use the Manhattan distance
+
+```{r,warning=FALSE,fig.align='center', cache = TRUE}
+# a vector to store the accuracies of the knn model
+accuracies <- NULL
+
+for (i in 1:15){
+  knn_model <- kknn(training_class_labels ~ .,
+                    X_train,
+                    X_test_pc,
+                    distance = 1,
+                    k= i,
+                    kernel = 'rectangular')
+  
+  accuracies <- c(accuracies,sum(knn_model$fitted.values == testting_class_labels)/length(testting_class_labels))
+}
+
+plot(c(1:15), accuracies, main = "KNN accuracy vs K", xlab = "K-Values", ylab = "Accuracy Score", lty = 1)
+```
+
+The plot shows that using 4 nearest neighbors, we get an overall accuracy of ~35%. 
+
+* Let us look at which author attribution did we get right and at what accuracy did we do it.
+
+```{r,warning=FALSE,fig.align='center', echo = FALSE}
+
+knn_prediction_vs_actual <- as.data.frame(table(knn_model$fitted.values, testting_class_labels))
+knn_prediction_vs_actual <- knn_prediction_vs_actual %>% filter(Freq > 0)
+
+names(knn_prediction_vs_actual) <- c("Author_Predicted", "Actual_Author", "Frequency")
+
+knn_prediction_vs_actual %>%
+  filter(Author_Predicted == Actual_Author) %>%
+  group_by(Actual_Author) %>% 
+  summarise("Accuracy" = sum(Frequency)/50) %>%
+  arrange(-Accuracy) %>%
+  head(5)
+
+```
+
+* Let us look at which author attribution did we not get right and at what accuracy did we do it.
+
+```{r,warning=FALSE,fig.align='center', echo = FALSE}
+knn_prediction_vs_actual %>%
+  filter(Author_Predicted == Actual_Author) %>%
+  group_by(Actual_Author) %>% 
+  summarise("Accuracy" = sum(Frequency)/50) %>%
+  arrange(Accuracy) %>%
+  head(5)
+
+```
+
+*Model 2 - Random Forest*
+
+The accuracy with K Nearest Neighbors isnt good! We don't want to do worse than a coin toss! Let's try out the Random Forest models and check if we do any better! <br>
+
+1. We will use a random forest model with 1000 trees with the default value of variables to pick for each tree!
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE,cache = TRUE}
+# Random Forest
+rf_model <- randomForest(training_class_labels ~ .,
+                         data = X_train,
+                         ntree = 1000)
+
+author_predict <- predict(rf_model, X_test_pc, type = "response")
+
+answer <- as.data.frame(table(author_predict, testting_class_labels))
+
+answer$correct <- ifelse(answer$author_predict==answer$testting_class_labels, 1, 0)
+
+rf_accuracy <- sum(answer$Freq[answer$correct==1])*100/sum(answer$Freq)
+  
+print(paste0("Accuracy is ", rf_accuracy))
+```
+
+The random Forest models give us `r rf_accuracy`% accuracy. This is much better than the knn model with 35% accuracy.
+
+* Let us look at which author attribution did we get right and at what accuracy did we do it.
+
+```{r,warning=FALSE,fig.align='center', echo = FALSE}
+names(answer) <- c("Author_Predicted", "Actual_Author", "Freq", "Correct")
+
+answer %>%
+  filter(Author_Predicted == Actual_Author) %>%
+  group_by(Actual_Author) %>% 
+  summarise("Accuracy" = sum(Freq)/50) %>%
+  arrange(-Accuracy) %>%
+  head(5)
+```
+
+* Let us look at which author attribution did we  not get right and at what accuracy did we do it.
+
+```{r,warning=FALSE,fig.align='center', echo = FALSE}
+answer %>%
+  filter(Author_Predicted == Actual_Author) %>%
+  group_by(Actual_Author) %>% 
+  summarise("Accuracy" = sum(Freq)/50) %>%
+  arrange(Accuracy) %>%
+  head(5)
+```
+
+We see  that accuricies  are better than the knn model for both rightly redictd and wrongly predicted data ! This is a good candidate for a prediction model!
+
+*XGBoost model*
+
+Finally, let's run the XGBoost model and check if it is able to improve upon the accuracy of the random Forest model. We believe so because by design XGBoost tries to capture the remaining pattern in the residuals of each previous model.
+
+```{r,warning=FALSE,fig.align='center', cache = TRUE}
+# XGBoost model
+
+train_data_xgboost_matrix <- data.matrix(X_train[,1:350])
+test_data_xgboost_matrix <- data.matrix(X_test_pc)
+
+dtrain <- xgb.DMatrix(data = train_data_xgboost_matrix, label = as.numeric(X_train[,351]) - 1)
+dtest <- xgb.DMatrix(data = test_data_xgboost_matrix, label = as.numeric(as.factor(testting_class_labels)) - 1)
+
+boost_model <- xgboost(data = dtrain, # the data   
+                       nround = 100, # max number of boosting iterations
+                       objective = "multi:softmax",
+                       eta = 0.15,
+                       num_class = 50,
+                       max_depth = 7,
+                       eval_metric = "mlogloss",
+                       verbose = 0)
+
+author_predict <- predict(boost_model, dtest)
+accuracy <- mean(author_predict == (as.numeric(as.factor(testting_class_labels)) - 1))*100
+
+print(paste0("Accuracy is ", accuracy))
+```
+
+So, we get `r accuracy`% accuracy with XGboost. This is not better than the Random Forest model. 
+
+*Model 4 - Naive Bayes*
+
+When it comes to identifying the author, Naive Bayes relies on the presumption that each observed phrase is independent of the others! As a result, we determine the likelihood of getting an author for each observed phrase in the test document term matrix! This is repeated for each term that is offered, and the result is the likelihood that an author is the source of the document. 
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# Naive Bayes Algorithm
+
+# test data frame
+test_matrix <- as.matrix(DTM_test)
+test_df <- as.data.frame(test_matrix)
+
+rownames(test_df) <- NULL
+
+
+# training data frame
+train_matrix <- as.matrix(train_DTM)
+train_df <- as.data.frame(train_matrix)
+
+rownames(train_df) <- NULL
+
+# attach class labels with the dataframe
+train_df$train_class <- training_class_labels
+
+# result matrix
+result_matrix <- matrix(0, nrow = nrow(test_df), ncol = length(unique(training_class_labels)), 
+                        dimnames = list(1:nrow(test_df), unique(training_class_labels)))
+
+
+for(class in unique(training_class_labels)){
+  
+  df <- train_df[train_df$train_class == class,]
+  
+  # add smoothing term for 0 frequency terms
+  df[,-ncol(train_df)] <- df[,-ncol(train_df)] + (1/ncol(train_df))
+  
+  # calculate fraction of appearance of a term
+  prob_vector <- (colSums(df[,-ncol(train_df)])/(sum(colSums(df[,-ncol(train_df)]))))
+  
+  # multiply probability by the test data terms
+  probability_vector <- sweep(x = test_df, 
+                              MARGIN = 2, 
+                              STATS = log(prob_vector), 
+                              FUN = '*')
+  
+  # get one probability number for one author
+  probability <- apply(probability_vector, MARGIN = 1, FUN = function(x){sum(x)})
+  
+  # add these probabilities to the result matrix under one author column
+  result_matrix[, class] <- probability
+}
+
+# create a dataframe from the result
+result_df <- data.frame(result_matrix)
+
+# get predicted author as one with max frequency for each test row
+predicted_class <- colnames(result_df)[apply(result_df, 1, which.max)]
+
+# accuracy is where predicted author matches true author
+nb_accuracy <- mean(as.numeric(predicted_class == testting_class_labels))*100
+
+```
+
+So we see that Naive Bayes achieves an accuracy of `r nb_accuracy`%.
+
+* Let us look at which author attribution did we get right and at what accuracy did we do it.
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+# create a frequency table for prediction and actual
+answer <- as.data.frame(table(predicted_class, testting_class_labels))
+
+# give relevant names to columns
+names(answer) <- c("Predicted_Author", "Actual_Author", "Frequency")
+
+# convert from factor to character
+answer$Predicted_Author <- as.character(answer$Predicted_Author)
+answer$Actual_Author <- as.character(answer$Actual_Author)
+
+# add a dummy for whether the prediction is correct or no
+answer$Correct <- ifelse(answer$Predicted_Author == answer$Actual_Author, 1, 0)
+
+# give authors for which we get maximum prediction accuracy
+answer %>%
+  filter(Predicted_Author == Actual_Author) %>%
+  group_by(Actual_Author) %>% 
+  summarise("Accuracy" = sum(Frequency)/50) %>%
+  arrange(-Accuracy) %>%
+  head(5)
+
+```
+
+
+### Conclusion
+
+To solve the author attribution with the data we have is not an easy task, but we achieved it with `r nb_accuracy`%  accuracy using a Naive Bayes model.
+
+In the process we also found out that the frequency of words in the training and testing data are different, which could lead to an assumption that the train and test data are of different context's and are non repetative.
+
+In the process we also saw saw the % of accuricies for each model predicting the right author. 
+
+We have made a few assumptions during our process of which i have two to highlight we considered terms only that were 99% or more in frequency to the enitre document and we limited our test data to the terms that were there in the training data
+
+\newpage
+
+## Assocition Rule Mining
+
+
+```{r echo=FALSE}
+
+groceries_raw<-read.table("Groceries.txt", header = FALSE, sep = ";", stringsAsFactors = FALSE)
+
+```
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+str(groceries_raw)
+summary(groceries_raw)
+```
+
+
+```{r echo=FALSE}
+item_list <- list()
+
+for (i in 1:nrow(groceries_raw)){
+  item_list[[i]] <- unlist(strsplit(groceries_raw[i,], ","))
+}
+
+item_list <- apply(groceries_raw, MARGIN = 1, FUN = function(x){unlist(strsplit(x, ","))})
+
+item_transactions <- as(item_list, "transactions")
+
+item_vector <- unlist(item_list)
+
+count_item <- as.data.frame(table(item_vector))
+
+ggplot(count_item %>% 
+         arrange(-Freq) %>% 
+         tail(20), 
+       aes(x = reorder(item_vector, -Freq), y = Freq)) + 
+  geom_bar(stat = "identity") + scale_x_discrete("Item Name") +
+  scale_y_continuous("Sold Count") + coord_flip()
+
+ggplot(count_item %>% 
+         arrange(-Freq) %>% 
+         head(20), 
+       aes(x = reorder(item_vector, -Freq), y = Freq)) + 
+  geom_bar(stat = "identity") + scale_x_discrete("Item Name") +
+  scale_y_continuous("Sold Count") + coord_flip()
+```
+We transform the data into a "transactions" class before applying the apriori algorithm in association rule mining.
+
+The summary of the dataset reveals the following:
+
+1. There are total of 9835 transactions in our dataset
+
+2. Whole milk is the present in 2513 baskets and is the most frequently bought item
+
+3. More than half of the transactions have 4 or lesser items per basket
+
+4. Considering  only unique items in each basket so that we do not get skewed results after applying the apriori mining algorithm
+
+```{r,warning=FALSE,fig.align='center',echo=FALSE}
+
+item_list <- lapply(item_list, unique)
+
+ # convert to the transactions type
+item_transactions <- as(item_list, "transactions")
+
+ # apply the apriori
+groceryrules <- apriori(item_transactions,
+                         parameter=list(support = .001,
+                                        confidence = .5))
+
+head(groceryrules, n = 10, by ="lift")
+
+plot(head(groceryrules, n = 10, by ="lift"), method = "graph",
+      main = "Top 10 Association Rules")
+```
+
+ **Conclusion**
+
+A study of the associations shows us the following
+
+1. People purchase soda, popcorn and other salty snacks together.
+
+2. Cheese, ham, white bread and eggs usually sell together.
+
+3. Sugar, baking powder and flour sell together, these are usually
+ baking items.
+
+4. Cheese, curd, whipped cream and yogurt sell together!
+
+
+## References
+
+1. We have referred Stack overflow for the issues/errors/syntax while coding -  https://stackoverflow.com/
+
+2. Professor James Scott class slides - https://github.com/Vishu611/STA380-Part2-JamesProffclass/tree/master/slides
+
+3. R site official documentation - https://www.r-project.org/other-docs.html
+
+
+<!-- <!-- <!-- ### Approach 2 -->  
+<!-- * support > 0.05, confidence > 0.1 and length <= 2 using the 'apriori' algorithm -->
+<!-- ```{r echo=FALSE, include=FALSE} -->
+<!-- grocrules_1 = apriori(item_transactions,  -->
+<!--                      parameter=list(support=0.05, confidence=.1, minlen=2)) -->
+<!-- ``` -->
+<!-- There are only 6 rules generated because of the high support and low confidence level. We also notice that most relationships in this item set include whole milk, yogurt and rolls/buns which is in accordance with the transaction frequency plot we saw earlier. These are some of the most frequently bought items. -->
+<!-- ```{r echo=FALSE} -->
+<!-- arules::inspect(grocrules_1) -->
+<!-- plot(grocrules_1, method='graph') -->
+<!-- ``` -->
+<!-- * support > 0.02, confidence > 0.2 and length <= 2 -->
+<!-- ```{r echo=FALSE, include=FALSE} -->
+<!-- grocrules_2 = apriori(item_transactions,  -->
+<!--                      parameter=list(support=0.02, confidence=.2, minlen=2)) -->
+<!-- arules::inspect(grocrules_2) -->
+<!-- ``` -->
+<!-- * This item set contains 72 rules and includes a lot more items. However, whole milk still seems to be a common occurence. -->
+<!-- ```{r echo=FALSE} -->
+<!-- plot(head(grocrules_2,15,by='lift'), method='graph') -->
+<!-- ``` -->
+<!-- * support > 0.0015, confidence > 0.8 and length <= 2 -->
+<!-- ```{r echo=FALSE, include=FALSE} -->
+<!-- grocrules_3 = apriori(item_transactions,  -->
+<!--                      parameter=list(support=0.0015, confidence=0.8, minlen=2)) -->
+<!-- arules::inspect(grocrules_3) -->
+<!-- ``` -->
+<!-- ```{r echo=FALSE} -->
+<!-- plot(head(grocrules_3, 5, by='lift'), method='graph') -->
+<!-- ``` -->
+<!-- ### Conclusion -->
+<!-- From the association rules, some of the conclusions that can be drawn are: -->
+<!-- 1. People are more likely to buy bottled beer if they purchased red wine or liquor -->
+<!-- 2. People are more likely to buy vegetables when they buy vegetable/fruit juice -->
+<!-- 3. Whole milk is the most common item purchased by customers -->
