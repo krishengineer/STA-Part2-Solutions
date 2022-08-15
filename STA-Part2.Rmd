@@ -2,12 +2,9 @@
 title: "STA 380 Part-2"
 author: "Viswa Tej Seela, Harshit Jain, Krish Engineer, Anudeep Akkana"
 date: "15 August 2022"
-output:
-  pdf_document:
-    fig_caption: yes
-    includes:
-      in_header: header.tex
-    latex_engine: xelatex
+output: 
+  md_document:
+  variant: markdown_github
 geometry: margin=0.75in
 fontsize: 10pt
 csl: https://raw.githubusercontent.com/citation-style-language/styles/master/ieee.csl
@@ -20,6 +17,11 @@ csl: https://raw.githubusercontent.com/citation-style-language/styles/master/iee
 \tableofcontents
 \clearpage
 
+## GIT LINK TO RMD FILE
+
+rmd file here - https://github.com/Vishu611/STA-Part2-Solutions/blob/main/STA-Part2.Rmd
+
+\newpage
 
 ```{r,warning=FALSE,fig.align='center',include=FALSE,echo=FALSE,warning=FALSE,message=FALSE,error=FALSE} 
 library(ISLR2)
