@@ -1,8 +1,11 @@
 <!-- Actual text starts here -->
 ## GIT LINK TO RMD FILE
 
+Team member names- 
+Viswa Tej Seela, Harshit Jain, Krish Engineer, Anudeep Akkana
+
 rmd file here -
-<https://github.com/Vishu611/STA-Part2-Solutions/blob/main/STA-Part2.Rmd>
+<https://github.com/krishengineer/STA-Part2-Solutions/blob/main/STA-Part2.Rmd>
 
 ## Probability Practice
 
